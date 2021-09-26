@@ -1,19 +1,9 @@
 package contrast
 
 import (
-	"fmt"
+	"gopkg.in/go-playground/colors.v1"
 	"math"
 )
-
-type RGBColor struct {
-	r uint8
-	g uint8
-	b uint8
-}
-
-func NewRGBColor(r, g, b uint8) *RGBColor {
-	return &RGBColor{r, g, b}
-}
 
 // https://www.w3.org/TR/2008/REC-WCAG20-20081211/#relativeluminancedef
 func getRelativeLuminance(l uint8) (rl float64) {
@@ -22,7 +12,6 @@ func getRelativeLuminance(l uint8) (rl float64) {
 	if c <= 0.03928 {
 		rl = float64(c) / 12.92
 	} else {
-		//fmt.Println("else", math.Pow((float64(l)+0.055)/1.055, 2.4))
 		rl = math.Pow((float64(c)+0.055)/1.055, 2.4)
 	}
 
@@ -30,27 +19,27 @@ func getRelativeLuminance(l uint8) (rl float64) {
 }
 
 // https://www.w3.org/TR/2008/REC-WCAG20-20081211/#contrastratio
-func GetRatio(text, background *RGBColor) (ratio float64) {
-	trrl := getRelativeLuminance(text.r)
-	tgrl := getRelativeLuminance(text.g)
-	tbrl := getRelativeLuminance(text.b)
+func GetRatio(color1, color2 *colors.RGBColor) (ratio float64) {
+	c1rrl := getRelativeLuminance(color1.R)
+	c1grl := getRelativeLuminance(color1.G)
+	c1brl := getRelativeLuminance(color1.B)
 
-	brrl := getRelativeLuminance(background.r)
-	bgrl := getRelativeLuminance(background.g)
-	bbrl := getRelativeLuminance(background.b)
+	c2rrl := getRelativeLuminance(color2.R)
+	c2grl := getRelativeLuminance(color2.G)
+	c2brl := getRelativeLuminance(color2.B)
 
-	tl := trrl*0.2126 + tgrl*0.7152 + tbrl*0.0722
-	bl := brrl*0.2126 + bgrl*0.7152 + bbrl*0.0722
+	c1 := c1rrl*0.2126 + c1grl*0.7152 + c1brl*0.0722
+	c2 := c2rrl*0.2126 + c2grl*0.7152 + c2brl*0.0722
 
 	var lighter, darker float64
-	if tl >= bl {
-		lighter = tl
-		darker = bl
+	if c1 >= c2 {
+		lighter = c1
+		darker = c2
 	} else {
-		lighter = bl
-		darker = tl
+		lighter = c2
+		darker = c1
 	}
-	fmt.Println("l, d", lighter, darker)
+
 	return (lighter + 0.05) / (darker + 0.05)
 }
 
